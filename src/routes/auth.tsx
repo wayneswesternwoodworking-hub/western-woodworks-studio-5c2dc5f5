@@ -84,7 +84,7 @@ function AuthPage() {
         <h1 style={{ fontSize: 24, marginTop: 16, marginBottom: 6 }}>Wayne's Admin</h1>
         <p style={{ fontSize: 13, opacity: 0.7, marginBottom: 24 }}>
           {mode === "signin" && "Sign in to manage photos, leads & invoices."}
-          {mode === "signup" && "Create owner account (first signup = admin)."}
+          {mode === "signup" && "Create an admin account with your invite code."}
           {mode === "forgot" && "Enter your email to receive a password reset link."}
         </p>
         <form onSubmit={submit} style={{ display: "grid", gap: 12 }}>
