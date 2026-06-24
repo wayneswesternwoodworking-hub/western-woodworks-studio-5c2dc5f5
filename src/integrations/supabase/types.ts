@@ -180,6 +180,45 @@ export type Database = {
         }
         Relationships: []
       }
+      site_content: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      site_photos: {
+        Row: {
+          slot: string
+          storage_path: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          slot: string
+          storage_path?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          slot?: string
+          storage_path?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
