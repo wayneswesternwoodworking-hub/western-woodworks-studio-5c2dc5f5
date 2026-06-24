@@ -7,6 +7,7 @@ import { listAllPhotos, uploadPhoto, updatePhoto, deletePhoto } from "@/lib/phot
 import { listLeads, updateLead, deleteLead } from "@/lib/leads.functions";
 import { listClients, upsertClient, deleteClient } from "@/lib/clients.functions";
 import { listInvoices, createInvoice, deleteInvoice, createInvoicePaymentLink, type LineItem } from "@/lib/invoices.functions";
+import { getSiteContent, upsertSiteContent, upsertSitePhoto } from "@/lib/site-content.functions";
 import { getStripeEnvironment, isPaymentsTestMode } from "@/lib/stripe-env";
 import "@/styles/admin.css";
 
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "dashboard" | "leads" | "clients" | "photos" | "invoices";
+type Tab = "dashboard" | "leads" | "clients" | "photos" | "invoices" | "content";
 
 function AdminPage() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -60,7 +61,7 @@ function AdminPage() {
         <button className="adm-btn-ghost" onClick={signOut}>Sign out</button>
       </div>
       <div className="adm-tabs">
-        {(["dashboard", "leads", "clients", "photos", "invoices"] as Tab[]).map((t) => (
+        {(["dashboard", "leads", "clients", "photos", "invoices", "content"] as Tab[]).map((t) => (
           <button key={t} className={`adm-tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -72,6 +73,7 @@ function AdminPage() {
         {tab === "clients" && <ClientsTab />}
         {tab === "photos" && <PhotosTab />}
         {tab === "invoices" && <InvoicesTab />}
+        {tab === "content" && <ContentTab />}
       </div>
     </div>
   );
@@ -446,6 +448,202 @@ function InvoiceForm({ clients, onSave, onCancel }: { clients: any[]; onSave: (v
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ============ Site Content Editor ============
+
+const CONTENT_FIELDS: { key: string; label: string; type: "input" | "textarea" | "list" }[] = [
+  { key: "about.headline", label: "About — Headline", type: "input" },
+  { key: "about.subhead",  label: "About — Subhead",  type: "input" },
+  { key: "about.body",     label: "About — Paragraphs", type: "list" },
+  { key: "services.headline", label: "Services — Headline", type: "input" },
+  { key: "services.list",     label: "Services — List items", type: "list" },
+  { key: "why.headline", label: "Why Clients — Headline", type: "input" },
+  { key: "why.list",     label: "Why Clients — List items", type: "list" },
+  { key: "cta.headline", label: "CTA — Headline", type: "input" },
+  { key: "cta.name",     label: "CTA — Contact name", type: "input" },
+  { key: "cta.email",    label: "CTA — Email", type: "input" },
+  { key: "cta.phone",    label: "CTA — Phone", type: "input" },
+];
+
+const PHOTO_SLOTS: { slot: string; label: string }[] = [
+  { slot: "hero",          label: "Hero (storefront)" },
+  { slot: "about_side",    label: "About — side photo (hats)" },
+  { slot: "services_side", label: "Services — side photo (counter)" },
+  { slot: "why_left",      label: "Why Clients — bottom left" },
+  { slot: "why_right",     label: "Why Clients — bottom right" },
+];
+
+function ContentTab() {
+  const qc = useQueryClient();
+  const getFn = useServerFn(getSiteContent);
+  const upsertText = useServerFn(upsertSiteContent);
+  const upsertPhoto = useServerFn(upsertSitePhoto);
+  const { data, isLoading } = useQuery({ queryKey: ["site-content-admin"], queryFn: () => getFn() });
+
+  const saveText = useMutation({
+    mutationFn: (v: { key: string; value: any }) => upsertText({ data: v }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["site-content-admin"] });
+      qc.invalidateQueries({ queryKey: ["site-content"] });
+    },
+  });
+  const savePhoto = useMutation({
+    mutationFn: (v: { slot: string; filename: string; contentType: string; base64: string }) =>
+      upsertPhoto({ data: v }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["site-content-admin"] });
+      qc.invalidateQueries({ queryKey: ["site-content"] });
+    },
+  });
+
+  if (isLoading || !data) return <div className="adm-empty">Loading…</div>;
+
+  return (
+    <div style={{ display: "grid", gap: 24 }}>
+      <div className="adm-card">
+        <h2>Homepage copy</h2>
+        <p style={{ color: "var(--muted)", marginBottom: 16, fontSize: 14 }}>
+          Edit any text. Press Save on each row to publish immediately.
+        </p>
+        {CONTENT_FIELDS.map((f) => (
+          <FieldEditor
+            key={f.key}
+            field={f}
+            initial={data.content[f.key]}
+            onSave={(value) => saveText.mutate({ key: f.key, value })}
+            saving={saveText.isPending && saveText.variables?.key === f.key}
+          />
+        ))}
+      </div>
+
+      <div className="adm-card">
+        <h2>Homepage photos</h2>
+        <p style={{ color: "var(--muted)", marginBottom: 16, fontSize: 14 }}>
+          Replace any photo by uploading a new one. The infographic posters (Concepts, Floating Displays) aren't editable.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 18 }}>
+          {PHOTO_SLOTS.map((p) => (
+            <PhotoSlotEditor
+              key={p.slot}
+              slot={p.slot}
+              label={p.label}
+              currentUrl={data.photos[p.slot]}
+              onUpload={(payload) => savePhoto.mutate({ slot: p.slot, ...payload })}
+              uploading={savePhoto.isPending && savePhoto.variables?.slot === p.slot}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FieldEditor({
+  field, initial, onSave, saving,
+}: {
+  field: { key: string; label: string; type: "input" | "textarea" | "list" };
+  initial: any;
+  onSave: (value: any) => void;
+  saving: boolean;
+}) {
+  const [val, setVal] = useState<any>(
+    field.type === "list" ? (Array.isArray(initial) ? initial : []) : (typeof initial === "string" ? initial : "")
+  );
+
+  return (
+    <div style={{ borderTop: "1px solid var(--line)", padding: "16px 0" }}>
+      <label style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.04, color: "var(--muted)" }}>
+        {field.label}
+      </label>
+      {field.type === "input" && (
+        <input
+          type="text"
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          style={{ width: "100%", marginTop: 8, padding: 10, border: "1px solid var(--line)", borderRadius: 4, fontSize: 15 }}
+        />
+      )}
+      {field.type === "list" && (
+        <ListEditor items={val} onChange={setVal} />
+      )}
+      <div style={{ display: "flex", gap: 10, marginTop: 10, alignItems: "center" }}>
+        <button className="adm-btn" disabled={saving} onClick={() => onSave(val)}>
+          {saving ? "Saving…" : "Save"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ListEditor({ items, onChange }: { items: string[]; onChange: (next: string[]) => void }) {
+  return (
+    <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+      {items.map((item, i) => (
+        <div key={i} style={{ display: "flex", gap: 6 }}>
+          <textarea
+            value={item}
+            onChange={(e) => {
+              const next = [...items]; next[i] = e.target.value; onChange(next);
+            }}
+            rows={item.length > 100 ? 3 : 1}
+            style={{ flex: 1, padding: 8, border: "1px solid var(--line)", borderRadius: 4, fontSize: 14, fontFamily: "inherit", resize: "vertical" }}
+          />
+          <button
+            type="button"
+            className="adm-btn-ghost"
+            onClick={() => onChange(items.filter((_, j) => j !== i))}
+            title="Remove"
+          >×</button>
+          <button
+            type="button"
+            className="adm-btn-ghost"
+            onClick={() => { if (i === 0) return; const next = [...items]; [next[i-1], next[i]] = [next[i], next[i-1]]; onChange(next); }}
+            title="Move up"
+          >↑</button>
+        </div>
+      ))}
+      <button
+        type="button"
+        className="adm-btn-ghost"
+        onClick={() => onChange([...items, ""])}
+        style={{ justifySelf: "start" }}
+      >+ Add item</button>
+    </div>
+  );
+}
+
+function PhotoSlotEditor({
+  slot, label, currentUrl, onUpload, uploading,
+}: {
+  slot: string; label: string; currentUrl?: string;
+  onUpload: (p: { filename: string; contentType: string; base64: string }) => void;
+  uploading: boolean;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function pickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const buf = await file.arrayBuffer();
+    let bin = "";
+    const bytes = new Uint8Array(buf);
+    for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+    const base64 = btoa(bin);
+    onUpload({ filename: file.name, contentType: file.type || "image/jpeg", base64 });
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  return (
+    <div style={{ border: "1px solid var(--line)", borderRadius: 6, padding: 12 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.04 }}>{label}</div>
+      <div style={{ background: "#EFECE5", aspectRatio: "4/3", overflow: "hidden", borderRadius: 4, marginBottom: 10 }}>
+        {currentUrl && <img src={currentUrl} alt={label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+      </div>
+      <input ref={fileRef} type="file" accept="image/*" onChange={pickFile} disabled={uploading} />
+      {uploading && <div style={{ fontSize: 12, marginTop: 6, color: "var(--ember)" }}>Uploading…</div>}
     </div>
   );
 }

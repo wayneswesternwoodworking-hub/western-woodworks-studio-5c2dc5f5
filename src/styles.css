@@ -45,9 +45,34 @@ body {
 a { color: inherit; text-decoration: none; }
 img { display: block; max-width: 100%; }
 
-.canva-page { display: block; max-width: 1366px; margin: 0 auto; background: #D9C9B0; }
-.canva-page > img { width: 100%; height: auto; display: block; }
-.quote-section { background: #D9C9B0; padding: 40px 0 60px; }
+.ww-page { display: block; max-width: 1366px; margin: 0 auto; background: #D9C9B0; }
+.ww-serif { font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; color: #3a2f23; letter-spacing: -0.005em; }
+.ww-hero img { width: 100%; height: auto; display: block; }
+.ww-band { padding: 56px clamp(24px, 5vw, 72px); }
+.ww-two { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+.ww-col-text h2 { font-size: clamp(30px, 3.4vw, 46px); line-height: 1.1; margin-bottom: 16px; }
+.ww-sub { font-size: clamp(18px, 1.6vw, 24px); margin-bottom: 22px; color: #5a4a39; }
+.ww-p { font-size: 15.5px; line-height: 1.65; color: #3a2f23; margin-bottom: 14px; }
+.ww-col-photo img { width: 100%; height: auto; display: block; }
+.ww-check { list-style: none; padding: 0; margin: 18px 0 0; }
+.ww-check li { font-size: 17px; line-height: 1.7; color: #3a2f23; display: flex; gap: 10px; align-items: baseline; }
+.ww-tick { color: #6b5638; font-weight: 700; }
+.ww-check-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 36px; margin: 26px auto 36px; max-width: 880px; }
+.ww-center { text-align: center; font-size: clamp(28px, 3.2vw, 42px); margin-bottom: 6px; }
+.ww-two-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 24px; }
+.ww-two-photos img { width: 100%; height: auto; display: block; }
+.ww-poster { background: #D9C9B0; }
+.ww-poster img { width: 100%; height: auto; display: block; }
+.ww-cta { text-align: center; padding-bottom: 80px; }
+.ww-cta-name { font-size: 20px; margin-top: 18px; color: #3a2f23; font-weight: 600; }
+.ww-cta-contact { margin-top: 8px; font-size: 17px; color: #3a2f23; }
+.ww-cta-contact .ww-dot { margin: 0 10px; color: #8a7a63; }
+.quote-section { background: #D9C9B0; padding: 20px 0 60px; }
+@media (max-width: 760px) {
+  .ww-two { grid-template-columns: 1fr; gap: 28px; }
+  .ww-check-2col { grid-template-columns: 1fr; }
+  .ww-two-photos { grid-template-columns: 1fr; }
+}
 
 .nav { position: sticky; top: 0; z-index: 50; background: rgba(247,245,241,0.86); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 62px; }
