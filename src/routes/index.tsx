@@ -46,9 +46,13 @@ function Index() {
       </nav>
 
       <main id="top" className="ww-page">
-        {/* Hero */}
         <section className="ww-hero">
           {photos.hero && <img src={photos.hero} alt="Wayne's Western Woodworking storefront" />}
+          <div className="ww-hero-copy">
+            <p>Custom furniture, counters, tables & fixtures</p>
+            <h1>Built by hand for homes and businesses that need the real thing.</h1>
+            <a href="#quote">Start a custom quote</a>
+          </div>
         </section>
 
         {/* About */}
@@ -180,8 +184,8 @@ function QuoteSection() {
           ) : (
             <form className="form" onSubmit={onSubmit}>
               <div className="field"><label>Name</label><input name="name" type="text" required placeholder="Your name" /></div>
-              <div className="field"><label>Email</label><input name="email" type="email" placeholder="you@email.com" /></div>
-              <div className="field"><label>Phone</label><input name="phone" type="tel" placeholder="(208) 555-0000" /></div>
+              <div className="field"><label>Email</label><input name="email" type="email" required placeholder="you@email.com" /></div>
+              <div className="field"><label>Phone</label><input name="phone" type="tel" required placeholder="(208) 555-0000" /></div>
               <div className="field">
                 <label>Project type</label>
                 <select name="project_type" defaultValue="">
