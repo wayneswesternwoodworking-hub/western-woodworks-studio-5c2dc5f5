@@ -116,6 +116,62 @@ function Stat({ label, value }: { label: string; value: string | number }) {
   );
 }
 
+function AccountTab() {
+  const [user, setUser] = useState<any>(null);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+  }, []);
+
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setMsg(null);
+    if (password !== confirm) {
+      setMsg("Passwords don't match");
+      return;
+    }
+    if (password.length < 6) {
+      setMsg("Password must be at least 6 characters");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      setMsg("Password updated successfully");
+      setPassword("");
+      setConfirm("");
+    } catch (e: any) {
+      setMsg(e.message ?? "Failed to update password");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="adm-card" style={{ maxWidth: 480 }}>
+      <h2 style={{ marginTop: 0 }}>Account</h2>
+      <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 20 }}>
+        Signed in as: <strong>{user?.email ?? "…"}</strong>
+      </div>
+      <form onSubmit={changePassword} style={{ display: "grid", gap: 12 }}>
+        <label className="adm-label">New password</label>
+        <input className="adm-input" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+        <label className="adm-label">Confirm new password</label>
+        <input className="adm-input" type="password" required minLength={6} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+        <div className="adm-row" style={{ marginTop: 4 }}>
+          <button className="adm-btn" disabled={loading} type="submit">{loading ? "Updating…" : "Update password"}</button>
+        </div>
+      </form>
+      {msg && <p style={{ marginTop: 12, fontSize: 13, color: msg.includes("success") ? "#8ed5b5" : "#e88a8a" }}>{msg}</p>}
+    </div>
+  );
+}
+
 function LeadsTab() {
   const qc = useQueryClient();
   const fn = useServerFn(listLeads);
