@@ -34,9 +34,9 @@ function Index() {
         <div className="wrap nav-inner">
           <a href="#top" className="brand">Wayne's Western <span>Woodworking</span></a>
           <div className="nav-links">
-            <a href="#work" className="txt">Work</a>
-            <a href="#process" className="txt">Process</a>
-            <a href="#about" className="txt">About</a>
+            <a href="#work" className="txt">Concepts</a>
+            <a href="#services" className="txt">Services</a>
+            <a href="#why" className="txt">Why us</a>
             <a href="#quote" className="pill">Request a quote</a>
           </div>
         </div>
@@ -45,40 +45,69 @@ function Index() {
       <header id="top" className="hero">
         <div className="wrap hero-grid">
           <div>
-            <div className="mono eyebrow">Wayne's Western Woodworking — Boise, Idaho</div>
-            <h1 className="statement">Handbuilt counters, tables, and fixtures. <em>Built to outlast the room.</em></h1>
-            <p className="hero-sub">Custom woodwork for retail floors, restaurants, and homes — milled, charred, and finished by hand in Idaho.</p>
+            <div className="mono eyebrow">About Wayne's Western Woodworking — Idaho</div>
+            <h1 className="statement">Handcrafted Furniture <em>Built to Last.</em></h1>
+            <p className="hero-sub">
+              Custom-built furniture and commercial woodworking — restaurant tables, countertops,
+              retail fixtures, and residential pieces, each one designed and built with an emphasis
+              on durability, craftsmanship, and attention to detail.
+            </p>
           </div>
           <div className="lists">
             <div className="list">
-              <h4>Builds</h4>
+              <h4>Built for</h4>
               <ul>
-                <li>Counters & POS</li>
-                <li>Tabletops & bar tops</li>
-                <li>Retail shelving</li>
-                <li>Seating & benches</li>
-                <li>Signage & frames</li>
+                <li>Restaurants</li>
+                <li>Retail floors</li>
+                <li>Bars & cafés</li>
+                <li>Offices</li>
+                <li>Homes</li>
               </ul>
             </div>
             <div className="list">
-              <h4>Finishes</h4>
+              <h4>Based in</h4>
               <ul>
-                <li>Torched fir</li>
-                <li>White oak</li>
-                <li>Walnut</li>
-                <li>Blackened steel</li>
-                <li>Hand-rubbed oil</li>
+                <li>Idaho</li>
+                <li>Built locally</li>
+                <li>Solid wood</li>
+                <li>Commercial-grade</li>
+                <li>Made to last</li>
               </ul>
             </div>
           </div>
         </div>
       </header>
 
+      <section id="services" className="section">
+        <div className="wrap">
+          <div className="section-head">
+            <h2>Services</h2>
+            <span className="mono">What we build</span>
+          </div>
+          <div className="services-grid">
+            {[
+              "Custom Furniture",
+              "Restaurant Tables",
+              "Bar Tops",
+              "Community Tables",
+              "Point of Sale Counters",
+              "Commercial Woodworking",
+              "Residential Woodworking",
+            ].map((s) => (
+              <div key={s} className="service">
+                <span className="check">✓</span>
+                <span>{s}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="work" className="section">
         <div className="wrap">
           <div className="section-head">
-            <h2>Selected Work</h2>
-            <span className="mono">Idaho — 2023–2025</span>
+            <h2>Concepts</h2>
+            <span className="mono">Selected work</span>
           </div>
           <div className="grid">
             {list.map((p, i) => {
@@ -102,34 +131,27 @@ function Index() {
         </div>
       </section>
 
-      <section id="process" className="section">
+      <section id="why" className="section">
         <div className="wrap">
           <div className="section-head">
-            <h2>How a build works</h2>
-            <span className="mono">Three steps</span>
+            <h2>Why Clients Choose Wayne's</h2>
+            <span className="mono">What sets the work apart</span>
           </div>
-          <div className="process">
-            <div className="step"><div className="num">01</div><p>Tell us the space — dimensions, how it gets used, and the look you're after.</p></div>
-            <div className="step"><div className="num">02</div><p>We quote the build and lock a timeline. No templates, no middlemen.</p></div>
-            <div className="step"><div className="num">03</div><p>A 50% deposit holds your spot on the bench. We build it, you install it.</p></div>
+          <div className="why-grid">
+            {[
+              "Custom-built to fit your space",
+              "Solid wood construction",
+              "Locally built in Idaho",
+              "Commercial-grade finishes",
+              "Direct communication from start to finish",
+              "Pride in craftsmanship and attention to every detail",
+            ].map((w) => (
+              <div key={w} className="why-item">
+                <span className="check">✓</span>
+                <p>{w}</p>
+              </div>
+            ))}
           </div>
-        </div>
-      </section>
-
-      <section id="about" className="section">
-        <div className="wrap">
-          <div className="section-head">
-            <h2>Trusted by</h2>
-            <span className="mono">Recent clients</span>
-          </div>
-          <div className="clients-row">
-            <span className="client anchor">Idaho Livin</span>
-            <span className="client ph">Boise Mercantile</span>
-            <span className="client ph">Sawtooth Coffee</span>
-            <span className="client ph">Foothills Barber Co.</span>
-            <span className="client ph">North End Provisions</span>
-          </div>
-          <p className="clients-note">Built the counters, fixtures & displays for shops across the Treasure Valley.</p>
         </div>
       </section>
 
@@ -138,24 +160,24 @@ function Index() {
       <footer>
         <div className="wrap">
           <div className="foot-grid">
-            <div className="foot-brand">Wayne's Western Woodworking<small>Handbuilt in Idaho · Est. 2019</small></div>
+            <div className="foot-brand">Wayne's Western Woodworking<small>Handbuilt in Idaho</small></div>
             <div className="foot-col">
               <h5>Contact</h5>
-              <a href="mailto:hello@wayneswestern.co">hello@wayneswestern.co</a>
-              <a href="tel:+12085550117">(208) 555-0117</a>
-              <p>Boise, Idaho</p>
+              <p>Kaden Stutzman</p>
+              <a href="mailto:wayneswesternwoodworking@gmail.com">wayneswesternwoodworking@gmail.com</a>
+              <a href="tel:+12089611863">(208) 961-1863</a>
             </div>
             <div className="foot-col">
               <h5>Index</h5>
-              <a href="#work">Work</a>
-              <a href="#process">Process</a>
-              <a href="#about">Clients</a>
+              <a href="#services">Services</a>
+              <a href="#work">Concepts</a>
+              <a href="#why">Why us</a>
               <a href="#quote">Request a quote</a>
             </div>
           </div>
           <div className="legal">
-            <span>© 2025 Wayne's Western Woodworking</span>
-            <span>Genuine wood · Genuine work</span>
+            <span>© 2026 Wayne's Western Woodworking</span>
+            <span>Let's build something unique</span>
           </div>
         </div>
       </footer>
@@ -200,8 +222,8 @@ function QuoteSection() {
     <section id="quote" className="section">
       <div className="wrap">
         <div className="quote">
-          <h3>Have a space that needs something built?</h3>
-          <p className="q-sub">Send the details and we'll come back with a quote. A 50% deposit reserves your build.</p>
+          <h3>Let's build something unique.</h3>
+          <p className="q-sub">Send the details and Kaden will come back with a quote. Direct communication from start to finish.</p>
           {done ? (
             <div className="form" style={{ padding: 24, textAlign: "center" }}>
               <p style={{ fontSize: 18 }}><b>Thanks — your request is in.</b></p>

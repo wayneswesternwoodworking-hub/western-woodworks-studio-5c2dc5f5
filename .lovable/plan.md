@@ -1,62 +1,61 @@
-## What gets built
+## Goal
 
-**Public site changes**
-- Work gallery becomes database-driven (pulls photos from Cloud storage instead of the 4 hardcoded images)
-- Quote request form actually submits — saves to a `leads` table instead of just logging
+Rebuild `/` so it mirrors the Canva design (`About Wayne's Western Woodworking`, 1366×6797 — a single tall landing page) while keeping the existing quote form and admin-managed photo gallery wired to the backend.
 
-**Admin area at `/admin`** (login required, Wayne is the only account)
-- Dashboard: counts of new leads, open invoices, paid this month
-- **Leads**: every quote form submission. Status pipeline (new → contacted → quoted → won/lost), notes, convert-to-client button
-- **Clients**: name, email, phone, address, notes. Linked to their leads and invoices
-- **Work photos**: upload, drag-to-reorder, edit title/caption, delete, toggle visible/hidden
-- **Invoices**: pick a client, add line items (description, qty, price), Stripe generates a hosted payment link, you copy/email it to the client. Status auto-updates to "paid" when Stripe confirms payment via webhook
+## Content (pulled from the Canva design)
 
-## Stack additions
+- **Hero**
+  - Eyebrow: "About Wayne's Western Woodworking"
+  - Headline: "Handcrafted Furniture Built to Last"
+  - Body: custom-built furniture and commercial woodworking; restaurant tables, countertops, retail fixtures, residential furniture; Idaho-based; quality, communication, durability.
+- **Services**
+  - Custom Furniture, Restaurant Tables, Bar Tops, Community Tables, Point of Sale Counters, Commercial Woodworking, Residential Woodworking
+- **Why Clients Choose Wayne's**
+  - Custom-built to fit your space
+  - Solid wood construction
+  - Locally built in Idaho
+  - Commercial-grade finishes
+  - Direct communication from start to finish
+  - Pride in craftsmanship and attention to every detail
+- **Concepts / Work gallery** — driven by `work_photos` from the database (already implemented)
+- **Lets Build Something Unique** (CTA → existing quote form, writes to `leads`)
+- **Contact footer**
+  - Kaden Stutzman
+  - wayneswesternwoodworking@gmail.com
+  - (208) 961-1863
 
-- **Lovable Cloud** — database, auth, file storage (for work photos), server functions
-- **Stripe (Lovable's built-in)** — no Stripe account needed to start. Test mode immediately; Wayne claims the account when ready for real money
-- **Login**: email + password for Wayne. One-time account creation, then he stays signed in
-
-## Database tables
+## Page structure
 
 ```text
-profiles         — Wayne's profile (id → auth.users)
-user_roles       — role assignments (admin enum); admin check via has_role()
-work_photos      — storage_path, title, caption, sort_order, visible
-leads            — name, email, phone, project_type, message, status, notes, client_id?, created_at
-clients          — name, email, phone, address, notes
-invoices         — client_id, line_items (jsonb), subtotal, status (draft/sent/paid/void),
-                   stripe_payment_link_url, stripe_payment_intent_id, paid_at
+[Nav: logo + jump links: Work · Services · Contact]
+[Hero — full bleed, big serif headline, intro paragraph, primary CTA "Get a quote"]
+[About paragraph block]
+[Services — two-column checklist grid]
+[Work gallery — grid of work_photos from DB]
+[Why clients choose — two-column checklist]
+[CTA banner: "Let's build something unique" + quote form]
+[Footer — Kaden, email, phone]
 ```
 
-Storage bucket: `work-photos` (public read).
+## Visual direction
 
-RLS: everything admin-only via `has_role(auth.uid(), 'admin')`. Two exceptions:
-- `work_photos` SELECT visible=true is public (so the homepage gallery works)
-- `leads` INSERT is public (so the quote form works)
+Match the Canva piece's feel: warm, woodsy, editorial. Cream/parchment background, deep walnut + charcoal text, rust/clay accent, serif display headings (e.g. Fraunces or Cormorant) paired with a clean grotesk for body. Generous vertical rhythm. No purple/indigo SaaS gradients.
 
-## Stripe wiring
+Tokens added in `src/styles.css` only — no hardcoded color utilities in components.
 
-- Server function `createInvoicePaymentLink(invoiceId)` → creates Stripe Product + Price + Payment Link, saves URL on the invoice row
-- Public webhook route `/api/public/webhooks/stripe` → on `checkout.session.completed`, marks the invoice paid
+## Files touched
 
-## Out of scope (call out so you can decide later)
+- `src/routes/index.tsx` — replace placeholder hero/sections with the structure above; keep the existing `useQuery` for `work_photos` and the lead-insert mutation.
+- `src/styles.css` — add semantic tokens (background, foreground, primary, accent, muted) and load Google Fonts via a `<link>` in `src/routes/__root.tsx`.
+- `src/routes/__root.tsx` — add the font `<link>` tags and update `<title>` / meta description / og tags to the new copy.
 
-- Emailing invoices automatically (you'll copy the pay link for now; can add Resend later)
-- Multi-user/staff roles
-- PDF invoice downloads
-- Recurring/subscription billing
-- Public client portal
+## Out of scope
 
-## Order of operations
+- Admin dashboard, auth flow, invoices, Stripe — untouched.
+- No new dependencies; no schema changes; no new routes.
 
-1. Enable Lovable Cloud
-2. Run Stripe eligibility check, then enable Stripe payments
-3. Migration: tables, RLS, storage bucket, admin role bootstrap
-4. Auth page (`/auth`) + protected `_authenticated` layout
-5. Replace homepage work gallery with DB query; wire quote form to insert lead
-6. Admin shell with sidebar + dashboard
-7. Leads page, Clients page, Photos manager, Invoices + Stripe integration
-8. Stripe webhook route
+## Open questions (will use defaults if you don't say otherwise)
 
-Want me to proceed?
+1. Logo — none in the Canva content. Default: wordmark "Wayne's Western Woodworking" in the serif display font.
+2. Hero background — default: large warm photo from the work gallery (first visible `work_photo`); falls back to a textured wood-grain CSS gradient if no photo yet.
+3. Show full contact (email + phone) in the footer publicly — default: yes, matching the Canva page.
