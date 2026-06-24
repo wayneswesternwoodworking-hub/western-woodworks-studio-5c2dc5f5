@@ -7,6 +7,7 @@ import { listAllPhotos, uploadPhoto, updatePhoto, deletePhoto } from "@/lib/phot
 import { listLeads, updateLead, deleteLead } from "@/lib/leads.functions";
 import { listClients, upsertClient, deleteClient } from "@/lib/clients.functions";
 import { listInvoices, createInvoice, deleteInvoice, createInvoicePaymentLink, type LineItem } from "@/lib/invoices.functions";
+import { getSiteContent, upsertSiteContent, upsertSitePhoto } from "@/lib/site-content.functions";
 import { getStripeEnvironment, isPaymentsTestMode } from "@/lib/stripe-env";
 import "@/styles/admin.css";
 
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "dashboard" | "leads" | "clients" | "photos" | "invoices";
+type Tab = "dashboard" | "leads" | "clients" | "photos" | "invoices" | "content";
 
 function AdminPage() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -60,7 +61,7 @@ function AdminPage() {
         <button className="adm-btn-ghost" onClick={signOut}>Sign out</button>
       </div>
       <div className="adm-tabs">
-        {(["dashboard", "leads", "clients", "photos", "invoices"] as Tab[]).map((t) => (
+        {(["dashboard", "leads", "clients", "photos", "invoices", "content"] as Tab[]).map((t) => (
           <button key={t} className={`adm-tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -72,6 +73,7 @@ function AdminPage() {
         {tab === "clients" && <ClientsTab />}
         {tab === "photos" && <PhotosTab />}
         {tab === "invoices" && <InvoicesTab />}
+        {tab === "content" && <ContentTab />}
       </div>
     </div>
   );
