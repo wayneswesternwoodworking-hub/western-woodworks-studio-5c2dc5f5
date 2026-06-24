@@ -13,6 +13,8 @@ export const submitLead = createServerFn({ method: "POST" })
     message?: string;
   }) => {
     if (!d.name || d.name.length < 1 || d.name.length > 200) throw new Error("Name required");
+    if (!d.email) throw new Error("Email required");
+    if (!d.phone) throw new Error("Phone required");
     return d;
   })
   .handler(async ({ data }) => {

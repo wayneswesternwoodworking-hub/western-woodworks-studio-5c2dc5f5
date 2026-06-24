@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { grantAdminWithInvite } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -11,9 +13,11 @@ function AuthPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const grantAdmin = useServerFn(grantAdminWithInvite);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -27,13 +31,16 @@ function AuthPage() {
     setMsg(null);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        if (!inviteCode.trim()) throw new Error("Invite code required");
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: window.location.origin + "/admin" },
         });
         if (error) throw error;
-        setMsg("Account created. Check your email if confirmation is required, then sign in.");
+        if (!data.user?.id) throw new Error("Account created, but admin access could not be assigned.");
+        await grantAdmin({ data: { userId: data.user.id, inviteCode: inviteCode.trim() } });
+        setMsg("Admin account created. Check your email if confirmation is required, then sign in.");
         setMode("signin");
       } else if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -87,6 +94,10 @@ function AuthPage() {
             <input type="password" required minLength={6} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
               style={inputStyle} />
           )}
+          {mode === "signup" && (
+            <input type="password" required placeholder="Admin invite code" value={inviteCode} onChange={(e) => setInviteCode(e.target.value)}
+              style={inputStyle} />
+          )}
           <button type="submit" disabled={loading} style={btnStyle}>
             {loading ? "..." : mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
           </button>
@@ -112,12 +123,12 @@ function AuthPage() {
         )}
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 16 }}>
           {mode !== "signin" && (
-            <button onClick={() => { setMode("signin"); setMsg(null); }} style={linkBtn}>← Back to sign in</button>
+            <button onClick={() => { setMode("signin"); setMsg(null); setInviteCode(""); }} style={linkBtn}>← Back to sign in</button>
           )}
           {mode === "signin" && (
             <>
               <button onClick={() => { setMode("forgot"); setMsg(null); }} style={linkBtn}>Forgot password?</button>
-              <button onClick={() => { setMode("signup"); setMsg(null); }} style={linkBtn}>Need an account? Sign up</button>
+              <button onClick={() => { setMode("signup"); setMsg(null); }} style={linkBtn}>Have an invite code? Create admin account</button>
             </>
           )}
         </div>
