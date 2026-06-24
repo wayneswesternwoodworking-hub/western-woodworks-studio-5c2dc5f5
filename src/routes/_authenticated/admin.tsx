@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "dashboard" | "leads" | "clients" | "photos" | "invoices" | "content";
+type Tab = "dashboard" | "leads" | "clients" | "photos" | "invoices" | "content" | "account";
 
 function AdminPage() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -61,7 +61,7 @@ function AdminPage() {
         <button className="adm-btn-ghost" onClick={signOut}>Sign out</button>
       </div>
       <div className="adm-tabs">
-        {(["dashboard", "leads", "clients", "photos", "invoices", "content"] as Tab[]).map((t) => (
+        {(["dashboard", "leads", "clients", "photos", "invoices", "content", "account"] as Tab[]).map((t) => (
           <button key={t} className={`adm-tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -74,6 +74,7 @@ function AdminPage() {
         {tab === "photos" && <PhotosTab />}
         {tab === "invoices" && <InvoicesTab />}
         {tab === "content" && <ContentTab />}
+        {tab === "account" && <AccountTab />}
       </div>
     </div>
   );
