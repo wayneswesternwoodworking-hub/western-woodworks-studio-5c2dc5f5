@@ -96,3 +96,6 @@ const inputStyle: React.CSSProperties = {
 const btnStyle: React.CSSProperties = {
   padding: "10px 12px", background: "#e3b58a", border: "none", color: "#0c0a08", fontWeight: 600, borderRadius: 3, cursor: "pointer", fontSize: 14,
 };
+const linkBtn: React.CSSProperties = {
+  background: "none", border: "none", color: "#a89684", fontSize: 12, cursor: "pointer", textAlign: "left", padding: 0,
+};
