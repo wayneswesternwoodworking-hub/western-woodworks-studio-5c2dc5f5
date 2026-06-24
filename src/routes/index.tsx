@@ -222,8 +222,8 @@ function QuoteSection() {
     <section id="quote" className="section">
       <div className="wrap">
         <div className="quote">
-          <h3>Have a space that needs something built?</h3>
-          <p className="q-sub">Send the details and we'll come back with a quote. A 50% deposit reserves your build.</p>
+          <h3>Let's build something unique.</h3>
+          <p className="q-sub">Send the details and Kaden will come back with a quote. Direct communication from start to finish.</p>
           {done ? (
             <div className="form" style={{ padding: 24, textAlign: "center" }}>
               <p style={{ fontSize: 18 }}><b>Thanks — your request is in.</b></p>
