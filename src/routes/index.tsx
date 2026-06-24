@@ -1,17 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { submitLead } from "@/lib/leads.functions";
-import mainTop from "@/assets/canva-main-top.png.asset.json";
-import infographics from "@/assets/canva-infographics.png.asset.json";
-import cta from "@/assets/canva-cta.png.asset.json";
+import { getSiteContent, type SiteData } from "@/lib/site-content.functions";
+import conceptsPoster from "@/assets/concepts-poster.png.asset.json";
+import shelvesPoster from "@/assets/shelves-poster.png.asset.json";
+
+const siteOpts = queryOptions({
+  queryKey: ["site-content"],
+  queryFn: () => getSiteContent(),
+});
 
 export const Route = createFileRoute("/")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(siteOpts),
+  errorComponent: ({ error }) => (
+    <div className="wrap" style={{ padding: 60 }}><h2>Couldn't load the page</h2><p>{error.message}</p></div>
+  ),
+  notFoundComponent: () => <div className="wrap" style={{ padding: 60 }}>Not found</div>,
   component: Index,
 });
 
+function s(data: SiteData, key: string, fallback: string): string {
+  const v = data.content[key];
+  return typeof v === "string" ? v : fallback;
+}
+function sArr(data: SiteData, key: string, fallback: string[]): string[] {
+  const v = data.content[key];
+  return Array.isArray(v) ? (v as string[]) : fallback;
+}
+
 function Index() {
+  const { data } = useSuspenseQuery(siteOpts);
+  const photos = data.photos;
+
   return (
     <>
       <nav className="nav">
@@ -23,20 +45,89 @@ function Index() {
         </div>
       </nav>
 
-      <main id="top" className="canva-page">
-        <img src={mainTop.url} alt="Wayne's Western Woodworking — handcrafted furniture built to last. Services and why clients choose us." />
-        <img src={infographics.url} alt="Concepts — restaurant table plans, floating displays and shelves, and finish options." loading="lazy" />
+      <main id="top" className="ww-page">
+        {/* Hero */}
+        <section className="ww-hero">
+          {photos.hero && <img src={photos.hero} alt="Wayne's Western Woodworking storefront" />}
+        </section>
+
+        {/* About */}
+        <section className="ww-band">
+          <div className="ww-two">
+            <div className="ww-col-text">
+              <h2 className="ww-serif">{s(data, "about.headline", "About Wayne's Western Woodworking")}</h2>
+              <p className="ww-sub ww-serif">{s(data, "about.subhead", "Handcrafted Furniture Built to Last")}</p>
+              {sArr(data, "about.body", []).map((p, i) => (
+                <p key={i} className="ww-p">{p}</p>
+              ))}
+            </div>
+            <div className="ww-col-photo">
+              {photos.about_side && <img src={photos.about_side} alt="Hat display" loading="lazy" />}
+            </div>
+          </div>
+        </section>
+
+        {/* Services */}
+        <section className="ww-band">
+          <div className="ww-two">
+            <div className="ww-col-photo">
+              {photos.services_side && <img src={photos.services_side} alt="Custom counter" loading="lazy" />}
+            </div>
+            <div className="ww-col-text">
+              <h2 className="ww-serif">{s(data, "services.headline", "Services")}</h2>
+              <ul className="ww-check">
+                {sArr(data, "services.list", []).map((item, i) => (
+                  <li key={i}><span className="ww-tick">✓</span>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* Why Clients */}
+        <section className="ww-band">
+          <h2 className="ww-serif ww-center">{s(data, "why.headline", "Why Clients Choose Wayne's Western Woodworking")}</h2>
+          <ul className="ww-check ww-check-2col">
+            {sArr(data, "why.list", []).map((item, i) => (
+              <li key={i}><span className="ww-tick">✓</span>{item}</li>
+            ))}
+          </ul>
+          <div className="ww-two-photos">
+            {photos.why_left && <img src={photos.why_left} alt="Workshop interior" loading="lazy" />}
+            {photos.why_right && <img src={photos.why_right} alt="Idaho Livin storefront" loading="lazy" />}
+          </div>
+        </section>
+
+        {/* Posters (not editable) */}
+        <section className="ww-poster">
+          <img src={conceptsPoster.url} alt="Restaurant table plans — Concepts" loading="lazy" />
+        </section>
+        <section className="ww-poster">
+          <img src={shelvesPoster.url} alt="Floating displays, shelves, and finish options" loading="lazy" />
+        </section>
+
+        {/* Quote form */}
         <QuoteSection />
-        <img src={cta.url} alt="Let's build something unique — contact Kaden Stutzman at wayneswesternwoodworking@gmail.com or (208) 961-1863." loading="lazy" />
+
+        {/* CTA */}
+        <section className="ww-band ww-cta">
+          <h2 className="ww-serif ww-center">{s(data, "cta.headline", "Lets Build Something Unique")}</h2>
+          <p className="ww-cta-name">{s(data, "cta.name", "Kaden Stutzman")}</p>
+          <p className="ww-cta-contact">
+            <a href={`mailto:${s(data, "cta.email", "")}`}>{s(data, "cta.email", "")}</a>
+            <span className="ww-dot">·</span>
+            <a href={`tel:${s(data, "cta.phone", "").replace(/[^0-9+]/g, "")}`}>{s(data, "cta.phone", "")}</a>
+          </p>
+        </section>
       </main>
 
       <footer>
         <div className="wrap legal">
           <span>© 2026 Wayne's Western Woodworking · Handbuilt in Idaho</span>
           <span>
-            <a href="mailto:wayneswesternwoodworking@gmail.com">wayneswesternwoodworking@gmail.com</a>
+            <a href={`mailto:${s(data, "cta.email", "")}`}>{s(data, "cta.email", "")}</a>
             {" · "}
-            <a href="tel:+12089611863">(208) 961-1863</a>
+            <a href={`tel:${s(data, "cta.phone", "").replace(/[^0-9+]/g, "")}`}>{s(data, "cta.phone", "")}</a>
           </span>
         </div>
       </footer>
@@ -80,9 +171,7 @@ function QuoteSection() {
       <div className="wrap">
         <div className="quote">
           <h3>Request a quote</h3>
-          <p className="q-sub">
-            Send the project details and Kaden will come back with a quote. Direct communication from start to finish.
-          </p>
+          <p className="q-sub">Send the project details and Kaden will come back with a quote. Direct communication from start to finish.</p>
           {done ? (
             <div className="form" style={{ padding: 24, textAlign: "center" }}>
               <p style={{ fontSize: 18 }}><b>Thanks — your request is in.</b></p>
