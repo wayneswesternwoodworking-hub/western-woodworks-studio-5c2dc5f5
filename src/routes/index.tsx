@@ -49,9 +49,9 @@ function Index() {
         <section className="ww-hero">
           {photos.hero && <img src={photos.hero} alt="Wayne's Western Woodworking storefront" />}
           <div className="ww-hero-copy">
-            <p>Custom furniture, counters, tables & fixtures</p>
-            <h1>Built by hand for homes and businesses that need the real thing.</h1>
-            <a href="#quote">Start a custom quote</a>
+            <p>Boise, Idaho custom woodworking</p>
+            <h1>Custom wood counters, tables, and fixtures built in Idaho</h1>
+            <a href="#quote">Request a quote</a>
           </div>
         </section>
 
