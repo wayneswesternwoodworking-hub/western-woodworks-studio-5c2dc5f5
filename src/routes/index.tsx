@@ -3,9 +3,9 @@ import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { submitLead } from "@/lib/leads.functions";
-import mainTop from "@/assets/canva-main-top.jpg.asset.json";
-import infographics from "@/assets/canva-infographics.jpg.asset.json";
-import cta from "@/assets/canva-cta.jpg.asset.json";
+import mainTop from "@/assets/canva-main-top.png.asset.json";
+import infographics from "@/assets/canva-infographics.png.asset.json";
+import cta from "@/assets/canva-cta.png.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Index,
