@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "dashboard" | "leads" | "clients" | "photos" | "invoices" | "content";
+type Tab = "dashboard" | "leads" | "clients" | "photos" | "invoices" | "content" | "account";
 
 function AdminPage() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -61,7 +61,7 @@ function AdminPage() {
         <button className="adm-btn-ghost" onClick={signOut}>Sign out</button>
       </div>
       <div className="adm-tabs">
-        {(["dashboard", "leads", "clients", "photos", "invoices", "content"] as Tab[]).map((t) => (
+        {(["dashboard", "leads", "clients", "photos", "invoices", "content", "account"] as Tab[]).map((t) => (
           <button key={t} className={`adm-tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -74,6 +74,7 @@ function AdminPage() {
         {tab === "photos" && <PhotosTab />}
         {tab === "invoices" && <InvoicesTab />}
         {tab === "content" && <ContentTab />}
+        {tab === "account" && <AccountTab />}
       </div>
     </div>
   );
@@ -111,6 +112,62 @@ function Stat({ label, value }: { label: string; value: string | number }) {
     <div className="adm-stat">
       <div className="adm-stat-num">{value}</div>
       <div className="adm-stat-label">{label}</div>
+    </div>
+  );
+}
+
+function AccountTab() {
+  const [user, setUser] = useState<any>(null);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+  }, []);
+
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setMsg(null);
+    if (password !== confirm) {
+      setMsg("Passwords don't match");
+      return;
+    }
+    if (password.length < 6) {
+      setMsg("Password must be at least 6 characters");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      setMsg("Password updated successfully");
+      setPassword("");
+      setConfirm("");
+    } catch (e: any) {
+      setMsg(e.message ?? "Failed to update password");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="adm-card" style={{ maxWidth: 480 }}>
+      <h2 style={{ marginTop: 0 }}>Account</h2>
+      <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 20 }}>
+        Signed in as: <strong>{user?.email ?? "…"}</strong>
+      </div>
+      <form onSubmit={changePassword} style={{ display: "grid", gap: 12 }}>
+        <label className="adm-label">New password</label>
+        <input className="adm-input" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+        <label className="adm-label">Confirm new password</label>
+        <input className="adm-input" type="password" required minLength={6} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+        <div className="adm-row" style={{ marginTop: 4 }}>
+          <button className="adm-btn" disabled={loading} type="submit">{loading ? "Updating…" : "Update password"}</button>
+        </div>
+      </form>
+      {msg && <p style={{ marginTop: 12, fontSize: 13, color: msg.includes("success") ? "#8ed5b5" : "#e88a8a" }}>{msg}</p>}
     </div>
   );
 }
