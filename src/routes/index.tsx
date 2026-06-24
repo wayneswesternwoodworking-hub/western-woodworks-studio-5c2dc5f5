@@ -1,4 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import { listPublicPhotos } from "@/lib/photos.functions";
+import { submitLead } from "@/lib/leads.functions";
 import work01 from "@/assets/work-01.jpg";
 import work02 from "@/assets/work-02.jpg";
 import work03 from "@/assets/work-03.jpg";
@@ -8,7 +13,21 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+const PLACEHOLDERS = [
+  { id: "p1", url: work01, title: "Retail checkout counter", caption: "Torched fir top · steel base · Idaho Livin, Boise" },
+  { id: "p2", url: work02, title: "Bar-top detail", caption: "Shou sugi ban fir · hand-rubbed oil" },
+  { id: "p3", url: work04, title: "Floating display shelving", caption: "Stained fir · wall-mounted · retail fixture" },
+  { id: "p4", url: work03, title: "Wrap-around counter", caption: "Charred fir · blackened panel · Idaho Livin" },
+];
+
 function Index() {
+  const fetchPhotos = useServerFn(listPublicPhotos);
+  const { data: photos } = useQuery({
+    queryKey: ["public-photos"],
+    queryFn: () => fetchPhotos(),
+  });
+  const list = photos && photos.length > 0 ? photos : PLACEHOLDERS;
+
   return (
     <>
       <nav className="nav">
@@ -62,34 +81,23 @@ function Index() {
             <span className="mono">Idaho — 2023–2025</span>
           </div>
           <div className="grid">
-            <div className="tile wide">
-              <div className="frame"><img src={work01} alt="Retail checkout counter in torched fir with steel base" width={1280} height={960} /></div>
-              <div className="spec">
-                <span className="no">№ 01</span>
-                <span className="meta"><b>Retail checkout counter</b><span className="det">Torched fir top · steel base · Idaho Livin, Boise</span></span>
-              </div>
-            </div>
-            <div className="tile narrow">
-              <div className="frame tall"><img src={work02} alt="Charred fir bar-top detail with hand-rubbed oil" width={960} height={1280} loading="lazy" /></div>
-              <div className="spec">
-                <span className="no">№ 02</span>
-                <span className="meta"><b>Bar-top detail</b><span className="det">Shou sugi ban fir · hand-rubbed oil</span></span>
-              </div>
-            </div>
-            <div className="tile narrow">
-              <div className="frame tall"><img src={work04} alt="Floating wall-mounted display shelving in stained fir" width={960} height={1280} loading="lazy" /></div>
-              <div className="spec">
-                <span className="no">№ 03</span>
-                <span className="meta"><b>Floating display shelving</b><span className="det">Stained fir · wall-mounted · retail fixture</span></span>
-              </div>
-            </div>
-            <div className="tile wide">
-              <div className="frame"><img src={work03} alt="Wrap-around charred fir counter with blackened panel" width={1280} height={960} loading="lazy" /></div>
-              <div className="spec">
-                <span className="no">№ 04</span>
-                <span className="meta"><b>Wrap-around counter</b><span className="det">Charred fir · blackened panel · Idaho Livin</span></span>
-              </div>
-            </div>
+            {list.map((p, i) => {
+              const wide = i % 2 === 0;
+              return (
+                <div key={p.id} className={`tile ${wide ? "wide" : "narrow"}`}>
+                  <div className={`frame ${wide ? "" : "tall"}`}>
+                    <img src={p.url} alt={p.title} loading={i > 0 ? "lazy" : undefined} />
+                  </div>
+                  <div className="spec">
+                    <span className="no">№ {String(i + 1).padStart(2, "0")}</span>
+                    <span className="meta">
+                      <b>{p.title || "Untitled"}</b>
+                      {p.caption && <span className="det">{p.caption}</span>}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -101,18 +109,9 @@ function Index() {
             <span className="mono">Three steps</span>
           </div>
           <div className="process">
-            <div className="step">
-              <div className="num">01</div>
-              <p>Tell us the space — dimensions, how it gets used, and the look you're after.</p>
-            </div>
-            <div className="step">
-              <div className="num">02</div>
-              <p>We quote the build and lock a timeline. No templates, no middlemen.</p>
-            </div>
-            <div className="step">
-              <div className="num">03</div>
-              <p>A 50% deposit holds your spot on the bench. We build it, you install it.</p>
-            </div>
+            <div className="step"><div className="num">01</div><p>Tell us the space — dimensions, how it gets used, and the look you're after.</p></div>
+            <div className="step"><div className="num">02</div><p>We quote the build and lock a timeline. No templates, no middlemen.</p></div>
+            <div className="step"><div className="num">03</div><p>A 50% deposit holds your spot on the bench. We build it, you install it.</p></div>
           </div>
         </div>
       </section>
@@ -134,40 +133,7 @@ function Index() {
         </div>
       </section>
 
-      <section id="quote" className="section">
-        <div className="wrap">
-          <div className="quote">
-            <h3>Have a space that needs something built?</h3>
-            <p className="q-sub">Send the details and we'll come back with a quote. A 50% deposit reserves your build.</p>
-            <form className="form" onSubmit={(e) => e.preventDefault()}>
-              <div className="field"><label>Name</label><input type="text" placeholder="Your name" /></div>
-              <div className="field"><label>Email</label><input type="email" placeholder="you@email.com" /></div>
-              <div className="field"><label>Phone</label><input type="tel" placeholder="(208) 555-0000" /></div>
-              <div className="field">
-                <label>Project type</label>
-                <select defaultValue="">
-                  <option value="" disabled>Select one</option>
-                  <option>Counter / POS</option>
-                  <option>Tabletop / bar top</option>
-                  <option>Retail shelving</option>
-                  <option>Seating / bench</option>
-                  <option>Signage / frame</option>
-                  <option>Something else</option>
-                </select>
-              </div>
-              <div className="field"><label>Rough dimensions</label><input type="text" placeholder="e.g. 10 ft × 30 in" /></div>
-              <div className="field"><label>Wood / finish</label><input type="text" placeholder="e.g. torched fir" /></div>
-              <div className="field"><label>Timeline</label><input type="text" placeholder="When do you need it?" /></div>
-              <div className="field"><label>Budget range</label><input type="text" placeholder="USD" /></div>
-              <div className="field full"><label>Details</label><textarea placeholder="Tell us about the space and the build."></textarea></div>
-              <div className="field full q-cta">
-                <button type="submit" className="btn">Request a quote</button>
-                <span className="q-note">Add reference photos after you submit — it helps us quote faster.</span>
-              </div>
-            </form>
-          </div>
-        </div>
-      </section>
+      <QuoteSection />
 
       <footer>
         <div className="wrap">
@@ -194,5 +160,85 @@ function Index() {
         </div>
       </footer>
     </>
+  );
+}
+
+function QuoteSection() {
+  const submit = useServerFn(submitLead);
+  const [done, setDone] = useState(false);
+  const m = useMutation({
+    mutationFn: (v: any) => submit({ data: v }),
+    onSuccess: () => setDone(true),
+  });
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const dimensions = (fd.get("dimensions") as string) || "";
+    const wood = (fd.get("wood") as string) || "";
+    const timeline = (fd.get("timeline") as string) || "";
+    const budget = (fd.get("budget") as string) || "";
+    const details = (fd.get("details") as string) || "";
+    const composed = [
+      dimensions && `Dimensions: ${dimensions}`,
+      wood && `Wood/finish: ${wood}`,
+      timeline && `Timeline: ${timeline}`,
+      budget && `Budget: ${budget}`,
+      details && `\n${details}`,
+    ].filter(Boolean).join("\n");
+
+    m.mutate({
+      name: fd.get("name") as string,
+      email: (fd.get("email") as string) || undefined,
+      phone: (fd.get("phone") as string) || undefined,
+      project_type: (fd.get("project_type") as string) || undefined,
+      message: composed || undefined,
+    });
+  }
+
+  return (
+    <section id="quote" className="section">
+      <div className="wrap">
+        <div className="quote">
+          <h3>Have a space that needs something built?</h3>
+          <p className="q-sub">Send the details and we'll come back with a quote. A 50% deposit reserves your build.</p>
+          {done ? (
+            <div className="form" style={{ padding: 24, textAlign: "center" }}>
+              <p style={{ fontSize: 18 }}><b>Thanks — your request is in.</b></p>
+              <p style={{ opacity: 0.7 }}>Wayne will reach out within 1–2 business days.</p>
+            </div>
+          ) : (
+            <form className="form" onSubmit={onSubmit}>
+              <div className="field"><label>Name</label><input name="name" type="text" required placeholder="Your name" /></div>
+              <div className="field"><label>Email</label><input name="email" type="email" placeholder="you@email.com" /></div>
+              <div className="field"><label>Phone</label><input name="phone" type="tel" placeholder="(208) 555-0000" /></div>
+              <div className="field">
+                <label>Project type</label>
+                <select name="project_type" defaultValue="">
+                  <option value="" disabled>Select one</option>
+                  <option>Counter / POS</option>
+                  <option>Tabletop / bar top</option>
+                  <option>Retail shelving</option>
+                  <option>Seating / bench</option>
+                  <option>Signage / frame</option>
+                  <option>Something else</option>
+                </select>
+              </div>
+              <div className="field"><label>Rough dimensions</label><input name="dimensions" type="text" placeholder="e.g. 10 ft × 30 in" /></div>
+              <div className="field"><label>Wood / finish</label><input name="wood" type="text" placeholder="e.g. torched fir" /></div>
+              <div className="field"><label>Timeline</label><input name="timeline" type="text" placeholder="When do you need it?" /></div>
+              <div className="field"><label>Budget range</label><input name="budget" type="text" placeholder="USD" /></div>
+              <div className="field full"><label>Details</label><textarea name="details" placeholder="Tell us about the space and the build."></textarea></div>
+              <div className="field full q-cta">
+                <button type="submit" className="btn" disabled={m.isPending}>
+                  {m.isPending ? "Sending…" : "Request a quote"}
+                </button>
+                <span className="q-note">{m.isError ? "Something went wrong. Try again." : "We'll respond within 1–2 business days."}</span>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
